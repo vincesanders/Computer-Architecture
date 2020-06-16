@@ -33,6 +33,7 @@ class CPU:
             0b10101100: self.handle_SHL,
             0b10101101: self.handle_SHR,
             0b10100001: self.handle_SUB,
+            0b10101011: self.handle_XOR,
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
@@ -48,6 +49,7 @@ class CPU:
             'SHL': self.ALU_SHL,
             'SHR': self.ALU_SHR,
             'SUB': self.ALU_SUB,
+            'XOR': self.ALU_XOR,
         }
 
     def load(self):
@@ -188,6 +190,13 @@ class CPU:
         self.MDR = self.REG[self.MAR] - self.MDR
         self.REG[self.MAR] = self.MDR
 
+    def ALU_XOR(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.MDR ^ self.REG[self.MAR]
+        self.REG[self.MAR] = self.MDR
+
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
@@ -280,6 +289,10 @@ class CPU:
 
     def handle_SUB(self):
         self.alu('SUB', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_XOR(self):
+        self.alu('XOR', self.PC + 1, self.PC + 2)
         self.PC += 3
 
     def handle_HLT(self):
