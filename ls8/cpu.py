@@ -15,6 +15,13 @@ class CPU:
         self.MAR = 0 # Memory Address Register
         self.MDR = 0 # Memory Data Register
         self.FL = [0] * 8
+        self.running = False
+        self.instructions = {}
+        self.instructions[0b10000010] = self.handle_LDI
+        self.instructions[0b01000111] = self.handle_PRN
+        self.instructions[0b10100010] = self.handle_MUL
+        self.instructions[0b10100000] = self.handle_ADD
+        self.instructions[0b00000001] = self.handle_HLT
 
     def load(self):
         """Load a program into memory."""
@@ -92,32 +99,37 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        running = True
-        while running:
+        self.running = True
+        while self.running:
             self.IR = self.ram_read(self.PC)
-            if self.IR == 0b10000010: # LDI load immediate
-                self.MAR = self.ram_read(self.PC + 1)
-                self.MDR = self.ram_read(self.PC + 2)
-                self.REG[self.MAR] = self.MDR
-                self.PC += 3
-            elif self.IR == 0b01000111: # PRN print register
-                self.MAR = self.ram_read(self.PC + 1)
-                print(self.REG[self.MAR])
-                self.PC += 2
-            elif self.IR == 0b10100010: # MUL
-                # self.alu('MUL', self.ram_read(self.PC + 1), self.ram_read(self.PC + 2))
-                self.alu('MUL', self.PC + 1, self.PC + 2)
-                self.PC += 3
-            elif self.IR == 0b10100000: # ADD
-                self.alu('ADD', self.PC + 1, self.PC + 2)
-                self.PC += 3
-            elif self.IR == 0b00000001: # HLT halt
-                running = False
-                self.PC += 1
+            if self.IR in self.instructions:
+                self.instructions[self.IR]()
             else:
                 print(f'Unknown instruction {self.IR} at address {self.PC}')
                 sys.exit(1)
 
+    def handle_LDI(self):
+        self.MAR = self.ram_read(self.PC + 1)
+        self.MDR = self.ram_read(self.PC + 2)
+        self.REG[self.MAR] = self.MDR
+        self.PC += 3
+
+    def handle_PRN(self):
+        self.MAR = self.ram_read(self.PC + 1)
+        print(self.REG[self.MAR])
+        self.PC += 2
+
+    def handle_MUL(self):
+        self.alu('MUL', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_ADD(self):
+        self.alu('ADD', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_HLT(self):
+        self.running = False
+        self.PC += 1
 
     def ram_read(self, memory_address):
         return self.RAM[memory_address]
