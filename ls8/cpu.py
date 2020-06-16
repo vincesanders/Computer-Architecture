@@ -22,6 +22,9 @@ class CPU:
         self.instructions[0b10100010] = self.handle_MUL
         self.instructions[0b10100000] = self.handle_ADD
         self.instructions[0b00000001] = self.handle_HLT
+        self.alu_operations = {}
+        self.alu_operations['MUL'] = self.ALU_MUL
+        self.alu_operations['ADD'] = self.ALU_ADD
 
     def load(self):
         """Load a program into memory."""
@@ -58,24 +61,24 @@ class CPU:
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
-        if op == "ADD":
-            # self.REG[reg_a] += self.REG[reg_b]
-            self.MAR = self.ram_read(reg_b)
-            self.MDR = self.REG[self.MAR]
-            self.MAR = self.ram_read(reg_a)
-            self.MDR = self.MDR + self.REG[self.MAR]
-            self.REG[self.MAR] = self.MDR
-        elif op == "MUL":
-            # self.REG[reg_a] = self.REG[reg_a] * self.REG[reg_b]
-            self.MAR = self.ram_read(reg_b)
-            self.MDR = self.REG[self.MAR]
-            self.MAR = self.ram_read(reg_a)
-            self.MDR = self.MDR * self.REG[self.MAR]
-            self.REG[self.MAR] = self.MDR
-        #elif op == "SUB": etc
+        if op in self.alu_operations:
+            self.alu_operations[op](reg_a, reg_b)
         else:
             raise Exception("Unsupported ALU operation")
+
+    def ALU_ADD(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.MDR + self.REG[self.MAR]
+        self.REG[self.MAR] = self.MDR
+
+    def ALU_MUL(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.MDR * self.REG[self.MAR]
+        self.REG[self.MAR] = self.MDR
 
     def trace(self):
         """
