@@ -50,11 +50,7 @@ array_dict = {}
 middle_chars = []
 
 for s in array: # O(n)
-    string_length = len(s)
-    if string_length % 2 is 0:
-        char_index = math.ceil(string_length / 2)
-    else:
-        char_index = math.ceil((string_length - 1)/ 2)
+    char_index = len(s) // 2
     char = s[char_index]
     if char in array_dict:
         array_dict[char].append(s)

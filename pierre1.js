@@ -16,10 +16,6 @@ Verbalize your thought process as much as possible before writing any code. Run 
 */
 const array = ['Waltz', 'Tango', 'Viennese Waltz', 'Foxtrot', 'Cha Cha', 'Samba', 'Rumba', 'Paso Doble', 'Jive']
 
-const getIndex = length => length % 2 === 0 ? length / 2 : Math.ceil((length - 1) / 2)
+array.sort((a, b) => a[Math.floor((a.length) / 2)].localeCompare(b[Math.floor(b.length / 2)]));
 
-array.sort((a, b) => a[getIndex(a.length)].localeCompare(b[getIndex(b.length)]));
-
-for (s of array) {
-    console.log(s)
-}
+for (s of array) {console.log(s)}
