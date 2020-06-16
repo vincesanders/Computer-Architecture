@@ -30,6 +30,8 @@ class CPU:
             0b10100100: self.handle_MOD,
             0b01101001: self.handle_NOT,
             0b10101010: self.handle_OR,
+            0b10101100: self.handle_SHL,
+            0b10101101: self.handle_SHR,
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
@@ -42,6 +44,8 @@ class CPU:
             'MOD': self.ALU_MOD,
             'NOT': self.ALU_NOT,
             'OR': self.ALU_OR,
+            'SHL': self.ALU_SHL,
+            'SHR': self.ALU_SHR,
         }
 
     def load(self):
@@ -161,6 +165,20 @@ class CPU:
         self.MDR = self.MDR | self.REG[self.MAR]
         self.REG[self.MAR] = self.MDR
 
+    def ALU_SHL(self, reg_a, reg_b): # This is the same as multiplying a by 2**b.
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.REG[self.MAR] << self.MDR
+        self.REG[self.MAR] = self.MDR
+
+    def ALU_SHR(self, reg_a, reg_b): # This is the same as floor dividing a by 2**b.
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.REG[self.MAR] >> self.MDR
+        self.REG[self.MAR] = self.MDR
+
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
@@ -241,6 +259,14 @@ class CPU:
 
     def handle_OR(self):
         self.alu('OR', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_SHL(self):
+        self.alu('SHL', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_SHR(self):
+        self.alu('SHR', self.PC + 1, self.PC + 2)
         self.PC += 3
 
     def handle_HLT(self):
