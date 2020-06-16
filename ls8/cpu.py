@@ -14,7 +14,7 @@ class CPU:
         self.IR = 0 # Instruction Register
         self.MAR = 0 # Memory Address Register
         self.MDR = 0 # Memory Data Register
-        self.FL = [0] * 8
+        self.FL = 0
         self.running = False
         self.instructions = {
             0b10000010: self.handle_LDI,
@@ -23,11 +23,13 @@ class CPU:
             0b10100000: self.handle_ADD,
             0b00000001: self.handle_HLT,
             0b10101000: self.handle_AND,
+            0b10100111: self.handle_CMP,
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
             'ADD': self.ALU_ADD,
-            'AND': self.ALU_AND
+            'AND': self.ALU_AND,
+            'CMP': self.ALU_CMP,
         }
 
     def load(self):
@@ -83,6 +85,18 @@ class CPU:
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.MDR & self.REG[self.MAR]
         self.REG[self.MAR] = self.MDR
+
+    def ALU_CMP(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.MDR & self.REG[self.MAR]
+        if self.MDR > self.REG[self.MAR]:
+            self.FL = 0b00000100 # reg a > reb b
+        elif self.MDR == self.REG[self.MAR]:
+            self.FL = 0b00000001 # they are equal
+        else:
+            self.FL = 0b00000010 # reg b > reb a
 
     def ALU_MUL(self, reg_a, reg_b):
         self.MAR = self.ram_read(reg_b)
@@ -143,6 +157,10 @@ class CPU:
 
     def handle_AND(self):
         self.alu('AND', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_CMP(self):
+        self.alu('CMP', self.PC + 1, self.PC + 2)
         self.PC += 3
 
     def handle_HLT(self):

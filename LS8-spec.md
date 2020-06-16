@@ -242,6 +242,7 @@ Compare the values in two registers.
 
 Machine code:
 ```
+              LGE
 10100111 00000aaa 00000bbb
 A7 0a 0b
 ```
