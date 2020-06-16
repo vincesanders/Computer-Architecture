@@ -16,15 +16,17 @@ class CPU:
         self.MDR = 0 # Memory Data Register
         self.FL = [0] * 8
         self.running = False
-        self.instructions = {}
-        self.instructions[0b10000010] = self.handle_LDI
-        self.instructions[0b01000111] = self.handle_PRN
-        self.instructions[0b10100010] = self.handle_MUL
-        self.instructions[0b10100000] = self.handle_ADD
-        self.instructions[0b00000001] = self.handle_HLT
-        self.alu_operations = {}
-        self.alu_operations['MUL'] = self.ALU_MUL
-        self.alu_operations['ADD'] = self.ALU_ADD
+        self.instructions = {
+            0b10000010: self.handle_LDI,
+            0b01000111: self.handle_PRN,
+            0b10100010: self.handle_MUL,
+            0b10100000: self.handle_ADD,
+            0b00000001: self.handle_HLT,
+        }
+        self.alu_operations = {
+            'MUL': self.ALU_MUL,
+            'ADD': self.ALU_ADD,
+        }
 
     def load(self):
         """Load a program into memory."""
