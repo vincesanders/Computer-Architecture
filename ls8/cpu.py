@@ -55,7 +55,12 @@ class CPU:
         if op == "ADD":
             self.REG[reg_a] += self.REG[reg_b]
         elif op == "MUL":
-            self.REG[reg_a] = self.REG[reg_a] * self.REG[reg_b]
+            # self.REG[reg_a] = self.REG[reg_a] * self.REG[reg_b]
+            self.MAR = self.ram_read(reg_b)
+            self.MDR = self.REG[self.MAR]
+            self.MAR = self.ram_read(reg_a)
+            self.MDR = self.MDR * self.REG[self.MAR]
+            self.REG[self.MAR] = self.MDR
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -94,6 +99,10 @@ class CPU:
                 self.MAR = self.ram_read(self.PC + 1)
                 print(self.REG[self.MAR])
                 self.PC += 2
+            elif self.IR == 0b10100010: #MUL
+                # self.alu('MUL', self.ram_read(self.PC + 1), self.ram_read(self.PC + 2))
+                self.alu('MUL', self.PC + 1, self.PC + 2)
+                self.PC += 3
             elif self.IR == 0b00000001: # HLT halt
                 running = False
                 self.PC += 1
