@@ -78,7 +78,7 @@ class CPU:
                 running = False
                 self.pc += 1
             else:
-                print(f'Unknown instruction {instruction_register} at address {program_counter}')
+                print(f'Unknown instruction {instruction_register} at address {self.pc}')
                 sys.exit(1)
 
 
