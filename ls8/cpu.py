@@ -10,11 +10,13 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.MAR = 0 # Memory Address Register
+        self.MDR = 0 # Memory Data Register
 
     def load(self):
         """Load a program into memory."""
 
-        address = 0
+        self.MAR = 0
 
         # For now, we've just hardcoded a program:
 
@@ -28,10 +30,10 @@ class CPU:
             0b00000001, # HLT
         ]
 
-        for instruction in program:
-            # self.ram[address] = instruction
-            self.ram_write(instruction, address)
-            address += 1
+        while self.MAR < len(program):
+            self.MDR = program[self.MAR]
+            self.ram_write(self.MDR, self.MAR)
+            self.MAR += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -69,10 +71,13 @@ class CPU:
         while running:
             instruction_register = self.ram_read(self.pc)
             if instruction_register == 0b10000010: # LDI load immediate
-                self.reg[self.ram_read(self.pc + 1)] = self.ram_read(self.pc + 2)
+                self.MAR = self.ram_read(self.pc + 1)
+                self.MDR = self.ram_read(self.pc + 2)
+                self.reg[self.MAR] = self.MDR
                 self.pc += 3
             elif instruction_register == 0b01000111: # PRN print register
-                print(self.reg[self.ram_read(self.pc + 1)])
+                self.MAR = self.ram_read(self.pc + 1)
+                print(self.reg[self.MAR])
                 self.pc += 2
             elif instruction_register == 0b00000001: # HLT halt
                 running = False
