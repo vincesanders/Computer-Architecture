@@ -153,7 +153,7 @@ def pass1(inputfile, sym, code):
         if m is None:
             if fatal:
                 print(f"Line {line_num}: unknown register {op}",
-                      file=sys.stderr)
+                    file=sys.stderr)
                 sys.exit(1)
             else:
                 return None
@@ -258,7 +258,7 @@ def pass1(inputfile, sym, code):
 
         except ValueError:
             print(f"line {line_num}: invalid integer argument to DB",
-                  file=sys.stderr)
+                file=sys.stderr)
             sys.exit(2)
 
         # Force to byte size
@@ -275,11 +275,11 @@ def pass1(inputfile, sym, code):
             # Makes sure we have right operand count
             if found < desired:
                 print(f"Line {line_num}: missing operand to {opcode}",
-                      file=sys.stderr)
+                    file=sys.stderr)
                 sys.exit(1)
             elif found > desired:
                 print(f"Line {line_num}: unexpected operand to {opcode}",
-                      file=sys.stderr)
+                    file=sys.stderr)
                 sys.exit(1)
 
         # Make sure we know this opcode at all
