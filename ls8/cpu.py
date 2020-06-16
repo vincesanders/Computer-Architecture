@@ -22,10 +22,12 @@ class CPU:
             0b10100010: self.handle_MUL,
             0b10100000: self.handle_ADD,
             0b00000001: self.handle_HLT,
+            0b10101000: self.handle_AND,
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
             'ADD': self.ALU_ADD,
+            'AND': self.ALU_AND
         }
 
     def load(self):
@@ -73,6 +75,13 @@ class CPU:
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.MDR + self.REG[self.MAR]
+        self.REG[self.MAR] = self.MDR
+
+    def ALU_AND(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.MDR & self.REG[self.MAR]
         self.REG[self.MAR] = self.MDR
 
     def ALU_MUL(self, reg_a, reg_b):
@@ -130,6 +139,10 @@ class CPU:
 
     def handle_ADD(self):
         self.alu('ADD', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_AND(self):
+        self.alu('AND', self.PC + 1, self.PC + 2)
         self.PC += 3
 
     def handle_HLT(self):

@@ -31,3 +31,23 @@ Bitwise operations
     1111
 >>1  111 - removes last bit, other bits shift right.
 '''
+
+numbers = [
+    0b01100101,
+    0b01100110,
+    0b01101001,
+    0b10100000,
+    0b10100001,
+    0b10100010,
+    0b10100011,
+    0b10100100,
+    0b10100111,
+    0b10101000,
+    0b10101010,
+    0b10101011,
+    0b10101100,
+    0b10101101,
+]
+
+for n in numbers:
+    print(n)
