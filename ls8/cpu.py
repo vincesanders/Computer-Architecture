@@ -26,7 +26,8 @@ class CPU:
             0b10100111: self.handle_CMP,
             0b01100110: self.handle_DEC,
             0b10100011: self.handle_DIV,
-            0b01100101: self.handle_INC
+            0b01100101: self.handle_INC,
+            0b10100100: self.handle_MOD
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
@@ -36,6 +37,7 @@ class CPU:
             'DEC': self.ALU_DEC,
             'DIV': self.ALU_DIV,
             'INC': self.ALU_INC,
+            'MOD': self.ALU_MOD,
         }
 
     def load(self):
@@ -119,8 +121,21 @@ class CPU:
     def ALU_DIV(self, reg_a, reg_b):
         self.MAR = self.ram_read(reg_b)
         self.MDR = self.REG[self.MAR]
+        if self.MDR == 0:
+            print('Cannot divide by 0.')
+            sys.exit(1)
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.REG[self.MAR] / self.MDR # floor division?
+        self.REG[self.MAR] = self.MDR
+
+    def ALU_MOD(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        if self.MDR == 0:
+            print('Cannot MOD by 0.')
+            sys.exit(1)
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.REG[self.MAR] % self.MDR # floor division?
         self.REG[self.MAR] = self.MDR
 
     def ALU_MUL(self, reg_a, reg_b):
@@ -198,6 +213,10 @@ class CPU:
 
     def handle_DIV(self):
         self.alu('DIV', self.PC + 1, self.PC + 2)
+        self.PC += 3
+
+    def handle_MOD(self):
+        self.alu('MOD', self.PC + 1, self.PC + 2)
         self.PC += 3
 
     def handle_HLT(self):
