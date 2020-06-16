@@ -26,6 +26,7 @@ class CPU:
             0b10100111: self.handle_CMP,
             0b01100110: self.handle_DEC,
             0b10100011: self.handle_DIV,
+            0b01100101: self.handle_INC
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
@@ -34,6 +35,7 @@ class CPU:
             'CMP': self.ALU_CMP,
             'DEC': self.ALU_DEC,
             'DIV': self.ALU_DIV,
+            'INC': self.ALU_INC,
         }
 
     def load(self):
@@ -106,6 +108,12 @@ class CPU:
         self.MAR = self.ram_read(reg)
         self.MDR = self.REG[self.MAR]
         self.MDR -= 1
+        self.REG[self.MAR] = self.MDR
+
+    def ALU_INC(self, reg, unused):
+        self.MAR = self.ram_read(reg)
+        self.MDR = self.REG[self.MAR]
+        self.MDR += 1
         self.REG[self.MAR] = self.MDR
 
     def ALU_DIV(self, reg_a, reg_b):
@@ -182,6 +190,10 @@ class CPU:
 
     def handle_DEC(self):
         self.alu('DEC', self.PC + 1, None)
+        self.PC += 2
+
+    def handle_INC(self):
+        self.alu('INC', self.PC + 1, None)
         self.PC += 2
 
     def handle_DIV(self):
