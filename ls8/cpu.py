@@ -27,7 +27,8 @@ class CPU:
             0b01100110: self.handle_DEC,
             0b10100011: self.handle_DIV,
             0b01100101: self.handle_INC,
-            0b10100100: self.handle_MOD
+            0b10100100: self.handle_MOD,
+            0b01101001: self.handle_NOT,
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
@@ -38,6 +39,7 @@ class CPU:
             'DIV': self.ALU_DIV,
             'INC': self.ALU_INC,
             'MOD': self.ALU_MOD,
+            'NOT': self.ALU_NOT,
         }
 
     def load(self):
@@ -145,6 +147,12 @@ class CPU:
         self.MDR = self.MDR * self.REG[self.MAR]
         self.REG[self.MAR] = self.MDR
 
+    def ALU_NOT(self, reg, unused):
+        self.MAR = self.ram_read(reg)
+        self.MDR = self.REG[self.MAR]
+        self.MDR = ~self.MDR
+        self.REG[self.MAR] = self.MDR
+
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
@@ -218,6 +226,10 @@ class CPU:
     def handle_MOD(self):
         self.alu('MOD', self.PC + 1, self.PC + 2)
         self.PC += 3
+
+    def handle_NOT(self):
+        self.alu('NOT', self.PC + 1, None)
+        self.PC += 2
 
     def handle_HLT(self):
         self.running = False
