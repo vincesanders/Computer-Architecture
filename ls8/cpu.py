@@ -29,6 +29,7 @@ class CPU:
             0b01100101: self.handle_INC,
             0b10100100: self.handle_MOD,
             0b01101001: self.handle_NOT,
+            0b10101010: self.handle_OR,
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
@@ -40,6 +41,7 @@ class CPU:
             'INC': self.ALU_INC,
             'MOD': self.ALU_MOD,
             'NOT': self.ALU_NOT,
+            'OR': self.ALU_OR,
         }
 
     def load(self):
@@ -100,7 +102,6 @@ class CPU:
         self.MAR = self.ram_read(reg_b)
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
-        self.MDR = self.MDR & self.REG[self.MAR]
         if self.MDR > self.REG[self.MAR]:
             self.FL = 0b00000100 # reg a > reb b
         elif self.MDR == self.REG[self.MAR]:
@@ -151,6 +152,13 @@ class CPU:
         self.MAR = self.ram_read(reg)
         self.MDR = self.REG[self.MAR]
         self.MDR = ~self.MDR
+        self.REG[self.MAR] = self.MDR
+
+    def ALU_OR(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.MDR | self.REG[self.MAR]
         self.REG[self.MAR] = self.MDR
 
     def trace(self):
@@ -230,6 +238,10 @@ class CPU:
     def handle_NOT(self):
         self.alu('NOT', self.PC + 1, None)
         self.PC += 2
+
+    def handle_OR(self):
+        self.alu('OR', self.PC + 1, self.PC + 2)
+        self.PC += 3
 
     def handle_HLT(self):
         self.running = False
