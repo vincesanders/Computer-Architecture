@@ -25,6 +25,7 @@ class CPU:
             0b10101000: self.handle_AND,
             0b10100111: self.handle_CMP,
             0b01100110: self.handle_DEC,
+            0b10100011: self.handle_DIV,
         }
         self.alu_operations = {
             'MUL': self.ALU_MUL,
@@ -32,6 +33,7 @@ class CPU:
             'AND': self.ALU_AND,
             'CMP': self.ALU_CMP,
             'DEC': self.ALU_DEC,
+            'DIV': self.ALU_DIV,
         }
 
     def load(self):
@@ -106,6 +108,13 @@ class CPU:
         self.MDR -= 1
         self.REG[self.MAR] = self.MDR
 
+    def ALU_DIV(self, reg_a, reg_b):
+        self.MAR = self.ram_read(reg_b)
+        self.MDR = self.REG[self.MAR]
+        self.MAR = self.ram_read(reg_a)
+        self.MDR = self.REG[self.MAR] / self.MDR # floor division?
+        self.REG[self.MAR] = self.MDR
+
     def ALU_MUL(self, reg_a, reg_b):
         self.MAR = self.ram_read(reg_b)
         self.MDR = self.REG[self.MAR]
@@ -174,6 +183,10 @@ class CPU:
     def handle_DEC(self):
         self.alu('DEC', self.PC + 1, None)
         self.PC += 2
+
+    def handle_DIV(self):
+        self.alu('DIV', self.PC + 1, self.PC + 2)
+        self.PC += 3
 
     def handle_HLT(self):
         self.running = False
