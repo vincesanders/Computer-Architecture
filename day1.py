@@ -27,6 +27,21 @@ register = [0] * 8 # 8 registers, like a variable
 program_counter = 0
 running = True
 
+num_operands = ((0b10101010 & 0b11000000) >> 6) + 1
+print(num_operands)
+
+x = 27
+y = 5
+
+while y > 0:
+    carry = x & y
+
+    x = x ^ y
+
+    y = carry << 1
+
+print(f'bitwise addition: {x}')
+
 while running:
     instruction_register = memory[program_counter]
     if instruction_register == PRINT_NAME:

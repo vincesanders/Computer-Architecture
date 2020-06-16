@@ -61,10 +61,11 @@ class CPU:
 
         with open(program) as file:
             for line in file:
-                # if the line is a line break or a comment, don't add to memory
-                if line[0] is '#' or line[0] is '\n':
+                line = line.split("#")
+                try:
+                    self.MDR = int(line[0], 2)
+                except ValueError:
                     continue
-                self.MDR = int(line[:8], 2) # only read the command code
                 self.ram_write(self.MDR, self.MAR)
                 self.MAR += 1
         # For now, we've just hardcoded a program:
@@ -92,11 +93,49 @@ class CPU:
         else:
             raise Exception("Unsupported ALU operation")
 
+    def bitwise_addition(self, num1, num2): # recursive
+        if num2 <= 0:
+            return num1
+        else: #                          sum of bits   common bits and shift
+            return self.bitwise_addition(num1 ^ num2, (num1 & num2) << 1)
+
+    def bitwise_subtraction(self, num1, num2):
+        if num2 <= 0:
+            return num1
+        else:
+            return self.bitwise_subtraction(num1 ^ num2, (~num1 & num2) << 1)
+
+    def bitwise_multiplication(self, num1, num2):
+        product = 0
+        count = 0
+        while num2 > 0:
+            if num2 % 2 == 1:
+                product += num1 << count
+            count += 1
+            num2 = num2 // 2
+        return product
+
+    def bitwise_division(self, num1, num2):
+        sign = 1
+        if num1 < 0 ^ num2 < 0:
+            sign = -1
+        # Make both nums positive
+        num1 = abs(num1)
+        num2 = abs(num2)
+        quotient = 0
+        temp = 0
+        # test down from the highest bit and accumulate the tentative value for valid bit 
+        for i in range(7, -1, -1): 
+            if (temp + (num2 << i) <= num1): 
+                temp += num2 << i 
+                quotient |= 1 << i
+        return sign * quotient
+
     def ALU_ADD(self, reg_a, reg_b):
         self.MAR = self.ram_read(reg_b)
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
-        self.MDR = self.MDR + self.REG[self.MAR]
+        self.MDR = self.bitwise_addition(self.MDR, self.REG[self.MAR])
         self.REG[self.MAR] = self.MDR
 
     def ALU_AND(self, reg_a, reg_b):
@@ -136,7 +175,7 @@ class CPU:
             print('Cannot divide by 0.')
             sys.exit(1)
         self.MAR = self.ram_read(reg_a)
-        self.MDR = self.REG[self.MAR] / self.MDR # floor division?
+        self.MDR = self.bitwise_division(self.REG[self.MAR], self.MDR)
         self.REG[self.MAR] = self.MDR
 
     def ALU_MOD(self, reg_a, reg_b):
@@ -153,7 +192,8 @@ class CPU:
         self.MAR = self.ram_read(reg_b)
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
-        self.MDR = self.MDR * self.REG[self.MAR]
+        self.MDR = self.bitwise_multiplication(self.REG[self.MAR], self.MDR)
+        # self.MDR = self.MDR * self.REG[self.MAR]
         self.REG[self.MAR] = self.MDR
 
     def ALU_NOT(self, reg, unused):
@@ -187,7 +227,8 @@ class CPU:
         self.MAR = self.ram_read(reg_b)
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
-        self.MDR = self.REG[self.MAR] - self.MDR
+        self.MDR = self.bitwise_subtraction(self.REG[self.MAR], self.MDR)
+        # self.MDR = self.REG[self.MAR] - self.MDR
         self.REG[self.MAR] = self.MDR
 
     def ALU_XOR(self, reg_a, reg_b):
@@ -203,9 +244,9 @@ class CPU:
         from run() if you need help debugging.
         """
 
-        print(f"TRACE: %02X | %02X %02X %02X |" % (
+        print(f"TRACE: %02X | %02X %02X %02X %02X |" % (
             self.PC,
-            #self.fl,
+            self.FL,
             #self.ie,
             self.ram_read(self.PC),
             self.ram_read(self.PC + 1),
@@ -223,81 +264,82 @@ class CPU:
         while self.running:
             self.IR = self.ram_read(self.PC)
             if self.IR in self.instructions:
-                self.instructions[self.IR]()
+                num_operations = ((self.IR & 0b11000000) >> 6) + 1
+                self.instructions[self.IR](num_operations)
             else:
                 print(f'Unknown instruction {self.IR} at address {self.PC}')
                 sys.exit(1)
 
-    def handle_LDI(self):
+    def handle_LDI(self, ops):
         self.MAR = self.ram_read(self.PC + 1)
         self.MDR = self.ram_read(self.PC + 2)
         self.REG[self.MAR] = self.MDR
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_PRN(self):
+    def handle_PRN(self, ops):
         self.MAR = self.ram_read(self.PC + 1)
         print(self.REG[self.MAR])
-        self.PC += 2
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_MUL(self):
+    def handle_MUL(self, ops):
         self.alu('MUL', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_ADD(self):
+    def handle_ADD(self, ops):
         self.alu('ADD', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_AND(self):
+    def handle_AND(self, ops):
         self.alu('AND', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_CMP(self):
+    def handle_CMP(self, ops):
         self.alu('CMP', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_DEC(self):
+    def handle_DEC(self, ops):
         self.alu('DEC', self.PC + 1, None)
-        self.PC += 2
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_INC(self):
+    def handle_INC(self, ops):
         self.alu('INC', self.PC + 1, None)
-        self.PC += 2
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_DIV(self):
+    def handle_DIV(self, ops):
         self.alu('DIV', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_MOD(self):
+    def handle_MOD(self, ops):
         self.alu('MOD', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_NOT(self):
+    def handle_NOT(self, ops):
         self.alu('NOT', self.PC + 1, None)
-        self.PC += 2
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_OR(self):
+    def handle_OR(self, ops):
         self.alu('OR', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_SHL(self):
+    def handle_SHL(self, ops):
         self.alu('SHL', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_SHR(self):
+    def handle_SHR(self, ops):
         self.alu('SHR', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_SUB(self):
+    def handle_SUB(self, ops):
         self.alu('SUB', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_XOR(self):
+    def handle_XOR(self, ops):
         self.alu('XOR', self.PC + 1, self.PC + 2)
-        self.PC += 3
+        self.PC = self.bitwise_addition(self.PC, ops)
 
-    def handle_HLT(self):
+    def handle_HLT(self, ops):
         self.running = False
-        self.PC += 1
+        self.PC = self.bitwise_addition(self.PC, ops)
 
     def ram_read(self, memory_address):
         return self.RAM[memory_address]

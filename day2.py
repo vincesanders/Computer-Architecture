@@ -1,3 +1,4 @@
+import sys
 '''
 Bitwise operations
 ~ - bitwise NOT ex: ~x
@@ -32,22 +33,62 @@ Bitwise operations
 >>1  111 - removes last bit, other bits shift right.
 '''
 
-numbers = [
-    0b01100101,
-    0b01100110,
-    0b01101001,
-    0b10100000,
-    0b10100001,
-    0b10100010,
-    0b10100011,
-    0b10100100,
-    0b10100111,
-    0b10101000,
-    0b10101010,
-    0b10101011,
-    0b10101100,
-    0b10101101,
-]
+import sys
 
-for n in numbers:
-    print(n)
+PRINT_NAME = 1
+HALT = 2
+SAVE_REGISTER = 3 # SAVE_REGISTER R1, 37   register[1] = 37
+PRINT_REGISTER = 4
+ADD = 5
+
+memory = [0] * 256
+
+register = [0] * 8 # 8 registers, like a variable
+
+program = sys.argv[1]
+
+with open(program) as f:
+    address = 0
+    for line in f:
+        line = line.split("#")
+        try:
+            v = int(line[0])
+        except ValueError:
+            continue
+        memory[address] = v
+        address += 1
+
+
+program_counter = 0
+running = True
+
+print(26 ^ 4)
+
+while running:
+    instruction_register = memory[program_counter]
+    if instruction_register == PRINT_NAME:
+        print('Vincent')
+        program_counter += 1
+    elif instruction_register == SAVE_REGISTER:
+        register_number = memory[program_counter + 1]
+        value = memory[program_counter + 2]
+        register[register_number] = value
+        program_counter += 3
+    elif instruction_register == PRINT_REGISTER:
+        register_index = memory[program_counter + 1]
+        value = register[register_index]
+        print(value)
+        program_counter += 2
+    elif instruction_register == ADD:
+        register_index_one = memory[program_counter + 1]
+        register_index_two = memory[program_counter + 2]
+        value_one = register[register_index_one]
+        value_two = register[register_index_two]
+        register[register_index_one] = value_one + value_two
+        program_counter += 3
+    elif instruction_register == HALT:
+        running = False
+        program_counter += 1
+    else:
+        print(f'Unknown instruction {instruction_register} at address {program_counter}')
+        sys.exit(1)
