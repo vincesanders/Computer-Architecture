@@ -37,6 +37,7 @@ class CPU:
             0b01000110: self.handle_POP,
             0b01001000: self.handle_PRA,
             0b01000101: self.handle_PUSH,
+            0b00010001: self.handle_RET,
             0b10101100: self.handle_SHL,
             0b10101101: self.handle_SHR,
             0b10000100: self.handle_ST,
@@ -322,11 +323,12 @@ class CPU:
         # push address of next instruction to stack
         self.SP = self.bitwise_subtraction(self.SP, 1)
         if self.SP == self.PC:
-            print('Stack overflow!')
+            print(f'Stack overflow! MAR: {self.MAR} SP: {self.SP} PC: {self.PC} ')
             sys.exit(1)
         self.ram_write(self.MAR, self.SP)
         # set PC to address in given register
-        self.PC = self.REG[self.PC + 1]
+        self.MAR = self.ram_read(self.PC + 1)
+        self.PC = self.REG[self.MAR]
 
     def handle_CMP(self, ops):
         self.alu('CMP', self.PC + 1, self.PC + 2)
@@ -386,6 +388,14 @@ class CPU:
         self.ram_write(self.MDR, self.SP)
         # increment program counter
         self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_RET(self, ops):
+        # Pop the value from the top of the stack and store it in the `PC`.
+        if self.SP == 0xF4:
+            print('Stack is empty!')
+            sys.exit(1)
+        self.PC = self.ram_read(self.SP)
+        self.SP = self.bitwise_addition(self.SP, 1)
 
     def handle_SHL(self, ops):
         self.alu('SHL', self.PC + 1, self.PC + 2)
