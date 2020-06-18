@@ -38,6 +38,7 @@ class CPU:
             0b01000101: self.handle_PUSH,
             0b10101100: self.handle_SHL,
             0b10101101: self.handle_SHR,
+            0b10000100: self.handle_ST,
             0b10100001: self.handle_SUB,
             0b10101011: self.handle_XOR,
         }
@@ -380,6 +381,16 @@ class CPU:
 
     def handle_SHR(self, ops):
         self.alu('SHR', self.PC + 1, self.PC + 2)
+        self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_ST(self, ops):
+        # get value in register b
+        self.MAR = self.PC + 2
+        self.MDR = self.ram_read(self.MAR)
+        self.MDR = self.REG[self.MDR]
+        # get address from register a
+        self.MAR = self.REG[self.PC + 1]
+        self.ram_write(self.MDR, self.MAR)
         self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_SUB(self, ops):
