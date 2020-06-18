@@ -19,6 +19,7 @@ class CPU:
         self.running = False
         self.instructions = {
             0b10000010: self.handle_LDI,
+            0b10000011: self.handle_LD,
             0b01000111: self.handle_PRN,
             0b10100010: self.handle_MUL,
             0b10100000: self.handle_ADD,
@@ -281,6 +282,12 @@ class CPU:
         self.MDR = self.ram_read(self.PC + 2)
         self.REG[self.MAR] = self.MDR
         self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_LD(self, ops):
+        self.MAR = self.REG[self.PC + 2]
+        self.MDR = self.ram_read(self.MAR)
+        self.MAR = self.PC + 1
+        self.REG[self.MAR] = self.MDR
 
     def handle_PRN(self, ops):
         self.MAR = self.ram_read(self.PC + 1)
