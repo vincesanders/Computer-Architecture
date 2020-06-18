@@ -23,6 +23,7 @@ class CPU:
             0b01000111: self.handle_PRN,
             0b10100010: self.handle_MUL,
             0b10100000: self.handle_ADD,
+            0b10101110: self.handle_ADDI,
             0b10101000: self.handle_AND,
             0b01010000: self.handle_CALL,            
             0b10100111: self.handle_CMP,
@@ -153,6 +154,12 @@ class CPU:
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.bitwise_addition(self.MDR, self.REG[self.MAR])
         self.REG[self.MAR] = self.MDR
+
+    def ALU_ADDI(self, reg, value):
+        self.MAR = value
+        self.MDR = self.ram_read(value)
+        self.MAR = reg
+        self.REG[self.ram_read(self.MAR)] = self.bitwise_addition(self.REG[self.ram_read(self.MAR)], self.MDR)
 
     def ALU_AND(self, reg_a, reg_b):
         self.MAR = self.ram_read(reg_b)
@@ -319,6 +326,10 @@ class CPU:
 
     def handle_ADD(self, ops):
         self.alu('ADD', self.PC + 1, self.PC + 2)
+        self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_ADDI(self, ops):
+        self.alu('ADDI', self.PC + 1, self.PC + 2)
         self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_AND(self, ops):
