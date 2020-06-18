@@ -31,8 +31,10 @@ class CPU:
             0b01100101: self.handle_INC,
             0b10100100: self.handle_MOD,
             0b01101001: self.handle_NOT,
+            0b00000000: self.handle_NOP,
             0b10101010: self.handle_OR,
             0b01000110: self.handle_POP,
+            0b01001000: self.handle_PRA,
             0b01000101: self.handle_PUSH,
             0b10101100: self.handle_SHL,
             0b10101101: self.handle_SHR,
@@ -294,6 +296,13 @@ class CPU:
         print(self.REG[self.MAR])
         self.PC = self.bitwise_addition(self.PC, ops)
 
+    def handle_PRA(self, ops):
+        self.MAR = self.ram_read(self.PC + 1)
+        self.MDR = self.REG[self.MAR]
+        # convert ascii to character and print
+        print(chr(self.MDR))
+        self.PC = self.bitwise_addition(self.PC, ops)
+
     def handle_MUL(self, ops):
         self.alu('MUL', self.PC + 1, self.PC + 2)
         self.PC = self.bitwise_addition(self.PC, ops)
@@ -328,6 +337,10 @@ class CPU:
 
     def handle_NOT(self, ops):
         self.alu('NOT', self.PC + 1, None)
+        self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_NOP(self, ops):
+        # do nothing
         self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_OR(self, ops):
