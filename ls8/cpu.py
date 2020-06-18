@@ -23,13 +23,20 @@ class CPU:
             0b01000111: self.handle_PRN,
             0b10100010: self.handle_MUL,
             0b10100000: self.handle_ADD,
-            0b01010000: self.handle_CALL,
-            0b00000001: self.handle_HLT,
             0b10101000: self.handle_AND,
+            0b01010000: self.handle_CALL,            
             0b10100111: self.handle_CMP,
             0b01100110: self.handle_DEC,
             0b10100011: self.handle_DIV,
+            0b00000001: self.handle_HLT,
             0b01100101: self.handle_INC,
+            0b01010101: self.handle_JEQ,
+            0b01011010: self.handle_JGE,
+            0b01010111: self.handle_JGT,
+            0b01011001: self.handle_JLE,
+            0b01011000: self.handle_JLT,
+            0b01010100: self.handle_JMP,
+            0b01010110: self.handle_JNE,
             0b10100100: self.handle_MOD,
             0b01101001: self.handle_NOT,
             0b00000000: self.handle_NOP,
@@ -341,6 +348,40 @@ class CPU:
     def handle_INC(self, ops):
         self.alu('INC', self.PC + 1, None)
         self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_JEQ(self, ops):
+        if self.FL == 1:
+            self.MAR = self.ram_read(self.PC + 1)
+            self.PC = self.REG[self.MAR]
+
+    def handle_JGE(self, ops):
+        if self.FL == 2 or self.FL == 1:
+            self.MAR = self.ram_read(self.PC + 1)
+            self.PC = self.REG[self.MAR]
+
+    def handle_JGT(self, ops):
+        if self.FL == 2:
+            self.MAR = self.ram_read(self.PC + 1)
+            self.PC = self.REG[self.MAR]
+
+    def handle_JLE(self, ops):
+        if self.FL == 4 or self.FL == 1:
+            self.MAR = self.ram_read(self.PC + 1)
+            self.PC = self.REG[self.MAR]
+
+    def handle_JLT(self, ops):
+        if self.FL == 4:
+            self.MAR = self.ram_read(self.PC + 1)
+            self.PC = self.REG[self.MAR]
+
+    def handle_JMP(self, ops):
+        self.MAR = self.ram_read(self.PC + 1)
+        self.PC = self.REG[self.MAR]
+
+    def handle_JNE(self, ops):
+        if self.FL != 1 and not 0:
+            self.MAR = self.ram_read(self.PC + 1)
+            self.PC = self.REG[self.MAR]
 
     def handle_DIV(self, ops):
         self.alu('DIV', self.PC + 1, self.PC + 2)
