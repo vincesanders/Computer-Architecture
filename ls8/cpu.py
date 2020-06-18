@@ -15,6 +15,7 @@ class CPU:
         self.MAR = 0 # Memory Address Register
         self.MDR = 0 # Memory Data Register
         self.FL = 0
+        self.SP = 0xF4  # 244
         self.running = False
         self.instructions = {
             0b10000010: self.handle_LDI,
@@ -30,6 +31,8 @@ class CPU:
             0b10100100: self.handle_MOD,
             0b01101001: self.handle_NOT,
             0b10101010: self.handle_OR,
+            0b01000110: self.handle_POP,
+            0b01000101: self.handle_PUSH,
             0b10101100: self.handle_SHL,
             0b10101101: self.handle_SHR,
             0b10100001: self.handle_SUB,
@@ -319,6 +322,27 @@ class CPU:
 
     def handle_OR(self, ops):
         self.alu('OR', self.PC + 1, self.PC + 2)
+        self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_POP(self, ops):
+        # get value at current SP
+        self.MAR = self.SP
+        self.MDR = self.ram_read(self.MAR)
+        self.MAR = self.PC + 1
+        self.REG[self.ram_read(self.MAR)] = self.MDR
+        # increment SP
+        self.SP = self.bitwise_addition(self.SP, 1)
+        # increment PC
+        self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_PUSH(self, ops):
+        # decrement Stack pointer
+        self.SP = self.bitwise_subtraction(self.SP, 1)
+        # add value to stack
+        self.MAR = self.ram_read(self.PC + 1)
+        self.MDR = self.REG[self.MAR]
+        self.ram_write(self.MDR, self.SP)
+        # increment program counter
         self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_SHL(self, ops):
