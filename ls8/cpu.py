@@ -15,6 +15,8 @@ class CPU:
         self.MAR = 0 # Memory Address Register
         self.MDR = 0 # Memory Data Register
         self.FL = 0
+        self.IM = 0
+        self.IS = 0
         self.SP = 0xF4  # 244
         self.running = False
         self.instructions = {
@@ -153,19 +155,23 @@ class CPU:
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.bitwise_addition(self.MDR, self.REG[self.MAR])
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_ADDI(self, reg, value):
         self.MAR = value
         self.MDR = self.ram_read(value)
         self.MAR = reg
-        self.REG[self.ram_read(self.MAR)] = self.bitwise_addition(self.REG[self.ram_read(self.MAR)], self.MDR)
+        self.MDR = self.bitwise_addition(self.REG[self.ram_read(self.MAR)], self.MDR)
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
+        self.REG[self.ram_read(self.MAR)] = self.MDR
 
     def ALU_AND(self, reg_a, reg_b):
         self.MAR = self.ram_read(reg_b)
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.MDR & self.REG[self.MAR]
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_CMP(self, reg_a, reg_b):
@@ -183,12 +189,14 @@ class CPU:
         self.MAR = self.ram_read(reg)
         self.MDR = self.REG[self.MAR]
         self.MDR -= 1
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_INC(self, reg, unused):
         self.MAR = self.ram_read(reg)
         self.MDR = self.REG[self.MAR]
         self.MDR += 1
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_DIV(self, reg_a, reg_b):
@@ -199,6 +207,7 @@ class CPU:
             sys.exit(1)
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.bitwise_division(self.REG[self.MAR], self.MDR)
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_MOD(self, reg_a, reg_b):
@@ -209,6 +218,7 @@ class CPU:
             sys.exit(1)
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.REG[self.MAR] % self.MDR # floor division?
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_MUL(self, reg_a, reg_b):
@@ -216,7 +226,7 @@ class CPU:
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.bitwise_multiplication(self.REG[self.MAR], self.MDR)
-        # self.MDR = self.MDR * self.REG[self.MAR]
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_NOT(self, reg, unused):
@@ -237,6 +247,7 @@ class CPU:
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.REG[self.MAR] << self.MDR
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_SHR(self, reg_a, reg_b): # This is the same as floor dividing a by 2**b.
@@ -244,6 +255,7 @@ class CPU:
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.REG[self.MAR] >> self.MDR
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_SUB(self, reg_a, reg_b):
@@ -251,7 +263,7 @@ class CPU:
         self.MDR = self.REG[self.MAR]
         self.MAR = self.ram_read(reg_a)
         self.MDR = self.bitwise_subtraction(self.REG[self.MAR], self.MDR)
-        # self.MDR = self.REG[self.MAR] - self.MDR
+        self.MDR = self.MDR & 0xFF # keep values under maximum (255)
         self.REG[self.MAR] = self.MDR
 
     def ALU_XOR(self, reg_a, reg_b):
