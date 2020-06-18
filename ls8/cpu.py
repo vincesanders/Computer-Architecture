@@ -330,7 +330,7 @@ class CPU:
         # push address of next instruction to stack
         self.SP = self.bitwise_subtraction(self.SP, 1)
         if self.SP == self.PC:
-            print(f'Stack overflow! MAR: {self.MAR} SP: {self.SP} PC: {self.PC} ')
+            print(f'Stack overflow!')
             sys.exit(1)
         self.ram_write(self.MAR, self.SP)
         # set PC to address in given register
@@ -353,26 +353,36 @@ class CPU:
         if self.FL == 1:
             self.MAR = self.ram_read(self.PC + 1)
             self.PC = self.REG[self.MAR]
+        else:
+            self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_JGE(self, ops):
         if self.FL == 2 or self.FL == 1:
             self.MAR = self.ram_read(self.PC + 1)
             self.PC = self.REG[self.MAR]
+        else:
+            self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_JGT(self, ops):
         if self.FL == 2:
             self.MAR = self.ram_read(self.PC + 1)
             self.PC = self.REG[self.MAR]
+        else:
+            self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_JLE(self, ops):
         if self.FL == 4 or self.FL == 1:
             self.MAR = self.ram_read(self.PC + 1)
             self.PC = self.REG[self.MAR]
+        else:
+            self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_JLT(self, ops):
         if self.FL == 4:
             self.MAR = self.ram_read(self.PC + 1)
             self.PC = self.REG[self.MAR]
+        else:
+            self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_JMP(self, ops):
         self.MAR = self.ram_read(self.PC + 1)
@@ -382,6 +392,8 @@ class CPU:
         if self.FL != 1 and not 0:
             self.MAR = self.ram_read(self.PC + 1)
             self.PC = self.REG[self.MAR]
+        else:
+            self.PC = self.bitwise_addition(self.PC, ops)
 
     def handle_DIV(self, ops):
         self.alu('DIV', self.PC + 1, self.PC + 2)
