@@ -23,6 +23,7 @@ class CPU:
             0b01000111: self.handle_PRN,
             0b10100010: self.handle_MUL,
             0b10100000: self.handle_ADD,
+            0b01010000: self.handle_CALL,
             0b00000001: self.handle_HLT,
             0b10101000: self.handle_AND,
             0b10100111: self.handle_CMP,
@@ -315,6 +316,17 @@ class CPU:
     def handle_AND(self, ops):
         self.alu('AND', self.PC + 1, self.PC + 2)
         self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_CALL(self, ops):
+        self.MAR = self.bitwise_addition(self.PC, ops)
+        # push address of next instruction to stack
+        self.SP = self.bitwise_subtraction(self.SP, 1)
+        if self.SP == self.PC:
+            print('Stack overflow!')
+            sys.exit(1)
+        self.ram_write(self.MAR, self.SP)
+        # set PC to address in given register
+        self.PC = self.REG[self.PC + 1]
 
     def handle_CMP(self, ops):
         self.alu('CMP', self.PC + 1, self.PC + 2)
