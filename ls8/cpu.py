@@ -326,6 +326,9 @@ class CPU:
 
     def handle_POP(self, ops):
         # get value at current SP
+        if self.SP == 0xF4:
+            print('Stack is empty!')
+            sys.exit(1)
         self.MAR = self.SP
         self.MDR = self.ram_read(self.MAR)
         self.MAR = self.PC + 1
@@ -335,6 +338,7 @@ class CPU:
         # increment PC
         self.PC = self.bitwise_addition(self.PC, ops)
 
+    # TODO inplement protection to ensure memory isn't overwritten by stack (stack overflow)
     def handle_PUSH(self, ops):
         # decrement Stack pointer
         self.SP = self.bitwise_subtraction(self.SP, 1)
