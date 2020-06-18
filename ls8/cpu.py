@@ -33,6 +33,7 @@ class CPU:
             0b10100011: self.handle_DIV,
             0b00000001: self.handle_HLT,
             0b01100101: self.handle_INC,
+            0b01010010: self.handle_INT,
             0b01010101: self.handle_JEQ,
             0b01011010: self.handle_JGE,
             0b01010111: self.handle_JGT,
@@ -371,6 +372,12 @@ class CPU:
     def handle_INC(self, ops):
         self.alu('INC', self.PC + 1, None)
         self.PC = self.bitwise_addition(self.PC, ops)
+
+    def handle_INT(self, ops):
+        #get interrupt number from register
+        self.MAR = self.PC + 1
+        self.MDR = self.ram_read(self.MAR) # this is the reg number
+        self.IS = self.REG[self.MDR]
 
     def handle_JEQ(self, ops):
         if self.FL == 1:
