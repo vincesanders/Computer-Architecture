@@ -278,7 +278,7 @@ class CPU:
         """Run the CPU."""
         self.running = True
         while self.running:
-            if self.SP == self.PC:
+            if self.SP <= self.PC + 1:
                 print('Stack overflow!')
                 sys.exit(1)
             self.IR = self.ram_read(self.PC)
@@ -420,7 +420,7 @@ class CPU:
     def handle_PUSH(self, ops):
         # decrement Stack pointer
         self.SP = self.bitwise_subtraction(self.SP, 1)
-        if self.SP == self.PC:
+        if self.SP <= self.PC + 1:
             print('Stack overflow!')
             sys.exit(1)
         # add value to stack
