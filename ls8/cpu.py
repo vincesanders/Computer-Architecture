@@ -265,6 +265,9 @@ class CPU:
         """Run the CPU."""
         self.running = True
         while self.running:
+            if self.SP == self.PC:
+                print('Stack overflow!')
+                sys.exit(1)
             self.IR = self.ram_read(self.PC)
             if self.IR in self.instructions:
                 num_operations = ((self.IR & 0b11000000) >> 6) + 1
@@ -338,10 +341,12 @@ class CPU:
         # increment PC
         self.PC = self.bitwise_addition(self.PC, ops)
 
-    # TODO inplement protection to ensure memory isn't overwritten by stack (stack overflow)
     def handle_PUSH(self, ops):
         # decrement Stack pointer
         self.SP = self.bitwise_subtraction(self.SP, 1)
+        if self.SP == self.PC:
+            print('Stack overflow!')
+            sys.exit(1)
         # add value to stack
         self.MAR = self.ram_read(self.PC + 1)
         self.MDR = self.REG[self.MAR]
